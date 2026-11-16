@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SLAY // TRACKER — Demo</title>
+<style>
+:root{--bg:#0b0c0d;--panel:#131517;--line:#25292c;--muted:#92999e;--text:#f3f5f6;--green:#7cf0ae;--red:#ff8e8e}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,system-ui,Arial,sans-serif}
+header{border-bottom:1px solid var(--line);position:sticky;top:0;background:#0b0c0dee;backdrop-filter:blur(12px);z-index:2}
+.wrap{max-width:1120px;margin:auto;padding:20px}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:15px}.brand{font-weight:850;letter-spacing:.12em}.brand b{background:var(--green);color:#07110b;padding:5px 8px;border-radius:5px;margin-right:9px}
+.tag{font-size:11px;color:var(--green);border:1px solid #28583c;padding:4px 8px;border-radius:30px;letter-spacing:.08em}
+.notice{margin:18px auto 0;padding:10px 13px;border:1px solid #735d2b;background:#211d12;color:#f4d991;border-radius:8px;font-size:12px}
+h1{font-size:clamp(30px,5vw,52px);line-height:1.05;letter-spacing:-.05em;margin:34px 0 10px}.sub{color:var(--muted);max-width:650px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:25px 0}.stat,.panel,.nom{background:var(--panel);border:1px solid var(--line);border-radius:12px}.stat{padding:16px}.stat small,.muted{color:var(--muted)}.stat strong{display:block;font-size:25px;margin-top:5px}
+.layout{display:grid;grid-template-columns:280px 1fr;gap:18px;margin-top:18px}.panel{padding:16px}.section-title{font-size:12px;color:var(--muted);letter-spacing:.12em;margin:0 0 12px}
+.category-list{display:grid;gap:6px}.cat{width:100%;text-align:left;background:transparent;color:var(--text);border:1px solid transparent;border-radius:8px;padding:10px;cursor:pointer}.cat:hover,.cat.active{background:#1d2224;border-color:#343b3f}.cat small{display:block;color:var(--muted);font-size:10px}
+.nom{padding:16px;margin:10px 0}.nom-head{display:flex;justify-content:space-between;gap:12px;align-items:center}.nom h2{margin:0;font-size:20px}.candidate{padding:14px 0;border-top:1px solid var(--line);margin-top:12px}.candidate:first-of-type{border:0}.candidate-top{display:flex;justify-content:space-between;gap:10px}.candidate-name{font-weight:700}.votes{font-variant-numeric:tabular-nums;font-weight:700}.bar{height:7px;background:#292e31;border-radius:20px;overflow:hidden;margin:9px 0 5px}.bar i{display:block;height:100%;background:var(--green);border-radius:20px}.meta{font-size:11px;color:var(--muted);display:flex;justify-content:space-between}
+button,.btn{border:1px solid #3b454a;background:#202629;color:var(--text);padding:9px 12px;border-radius:8px;cursor:pointer;font-weight:650}button:hover{border-color:var(--green)}.primary{background:var(--green);border-color:var(--green);color:#07110b}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+#terminal{display:none;background:#050807;border:1px solid #244332;color:var(--green);padding:14px;border-radius:10px;font:12px/1.8 ui-monospace,monospace;margin-top:14px;white-space:pre-line}
+.admin{margin-top:18px}.admin summary{cursor:pointer;font-weight:750}.fields{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}.field label{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}.field input,.field select{width:100%;background:#090b0c;border:1px solid var(--line);color:var(--text);padding:10px;border-radius:7px}
+footer{color:var(--muted);font-size:11px;padding:30px 0 50px}.empty{color:var(--muted);padding:18px 0}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.category-list{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:1fr}.fields{grid-template-columns:1fr}.wrap{padding:15px}}
+</style></head>
+<body>
+<header><div class="wrap nav"><div class="brand"><b>S</b>SLAY // TRACKER</div><span class="tag">DEMO ENVIRONMENT</span></div></header>
+<main class="wrap">
+<div class="notice">ДЕМОНСТРАЦИОННАЯ СИМУЛЯЦИЯ. Показатели ниже вымышлены и не являются данными SLAY или официального голосования.</div>
+<h1>Vote intelligence.<br><span style="color:var(--green)">In real time.</span></h1>
+<p class="sub">Интерактивная панель для просмотра номинаций и тестирования сценариев изменения условных рейтингов.</p>
+<div class="stats">
+ <div class="stat"><small>DEMO VOTES</small><strong id="total">0</strong></div>
+ <div class="stat"><small>CATEGORIES</small><strong id="catCount">14</strong></div>
+ <div class="stat"><small>SIMULATION</small><strong style="color:var(--green)">LOCAL / ON</strong></div>
+</div>
+<div class="layout">
+ <aside class="panel"><p class="section-title">NOMINATIONS / 2026</p><div id="categoryList" class="category-list"></div></aside>
+ <section class="panel">
+  <div class="nom-head"><div><p class="section-title">CATEGORY OVERVIEW</p><h2 id="categoryTitle">SLAY KING</h2></div><span class="tag">SIMULATED</span></div>
+  <div id="candidateList"></div>
+  <div class="actions"><button class="primary" id="scan">Получить демонстрационные данные</button><button id="pause">Пауза роста</button><button id="reset">Сбросить</button></div>
+  <div id="terminal"></div>
+ </section>
+</div>
+<details class="panel admin" open>
+ <summary>ADMIN CONSOLE / управление симуляцией</summary>
+ <p class="muted" style="font-size:12px">Настройки сохраняются только в этом браузере. Здесь можно менять условные значения и скорость их роста.</p>
+ <div class="fields">
+  <div class="field"><label>Участник</label><select id="person"></select></div>
+  <div class="field"><label>Начальное количество голосов</label><input id="votes" type="number" min="0" value="1000"></div>
+  <div class="field"><label>Прирост в минуту</label><input id="rate" type="number" min="0" value="100"></div>
+  <div class="field"><label>Псевдоним / имя</label><input id="rename" type="text" placeholder="Имя участника"></div>
+ </div>
+ <div class="actions"><button class="primary" id="save">Сохранить параметры</button><button id="add">Добавить участника</button></div>
+</details>
+<footer>SLAY TRACKER DEMO · Не связан с организаторами премии SLAY. Данные номинантов требуют сверки с официальным списком. Данные голосов синтетические.</footer>
+</main>
+<script>
+const categories=[
+"SLAY KING","SLAY QUEEN","ЛУЧШИЙ CS-СТРИМЕР","ЛУЧШИЙ DOTA-СТРИМЕР",
+"ЛУЧШИЙ MULTIGAMING-СТРИМЕР","NEXT GEN","ЛУЧШИЙ IRL-СТРИМЕР",
+"ПРОЕКТ ГОДА НА TWITCH","АУДИТОРИЯ ГОДА","ПАРА ГОДА","ЗАВОЗ ГОДА",
+"ТРЕК ГОДА","КОСПЛЕЕР ГОДА","ЮТУБЕР ГОДА",
+"ДОПОЛНИТЕЛЬНАЯ НОМИНАЦИЯ A","ДОПОЛНИТЕЛЬНАЯ НОМИНАЦИЯ B"
+];
+const data={};
+categories.forEach(c=>data[c]=[]);
+data["SLAY KING"]=[
+{name:"Evelone2004",votes:659000,rate:1200},
+{name:"bratishkinoff",votes:467859,rate:250},
+{name:"Leva2K",votes:120000,rate:100},
+{name:"shadowkekw",votes:95000,rate:80},
+{name:"Strogo",votes:80000,rate:70},
+{name:"Ravshann",votes:70000,rate:60},
+{name:"DangerLyoha",votes:60000,rate:50},
+{name:"Sasavot",votes:50000,rate:40},
+{name:"Deepens02",votes:40000,rate:30},
+{name:"AnarAbdullaev",votes:30000,rate:20}
+];
+let current=categories[0],running=true,scanDone=false;
+const fmt=n=>Math.floor(n).toLocaleString("ru-RU");
+function render(){
+ document.getElementById("categoryList").innerHTML=categories.map(c=>`<button class="cat ${c===current?'active':''}" data-cat="${c}">${c}<small>${data[c].length?data[c].length+' участников':'Список уточняется'}</small></button>`).join("");
+ document.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{current=b.dataset.cat;render()});
+ document.getElementById("categoryTitle").textContent=current;
+ const arr=[...data[current]].sort((a,b)=>b.votes-a.votes),sum=arr.reduce((s,x)=>s+x.votes,0);
+ document.getElementById("candidateList").innerHTML=arr.length?arr.map((x,i)=>`<div class="candidate"><div class="candidate-top"><span class="candidate-name">${i+1}. ${esc(x.name)}</span><span class="votes">${fmt(x.votes)}</span></div><div class="bar"><i style="width:${sum?x.votes/sum*100:0}%"></i></div><div class="meta"><span>${sum?(x.votes/sum*100).toFixed(1):'0.0'}% условных голосов</span><span>+${fmt(x.rate)} / мин</span></div></div>`).join(""):'<div class="empty">Список участников этой номинации ещё не загружен. Добавь участников через админ-консоль после сверки с официальным сайтом.</div>';
+ const all=categories.flatMap(c=>data[c]);document.getElementById("total").textContent=fmt(all.reduce((s,x)=>s+x.votes,0));
+ document.getElementById("catCount").textContent=categories.length;
+ const sel=document.getElementById("person");let old=sel.value;sel.innerHTML=categories.flatMap(c=>data[c].map((x,i)=>`<option value="${categories.indexOf(c)}:${i}">${c} / ${esc(x.name)}</option>`)).join("");if(old)sel.value=old;
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+document.getElementById("scan").onclick=()=>{
+ const t=document.getElementById("terminal");t.style.display="block";t.textContent="";
+ const lines=["[01] Initializing demo environment...","[02] Establishing local simulation channel...","[03] Loading configured sample records...","[04] Calculating percentages...","[05] Rendering demo leaderboard...","[OK] Simulation data ready."];
+ let i=0;const next=()=>{if(i<lines.length){t.textContent+=lines[i++]+"\\n";setTimeout(next,350)}};next();scanDone=true;
+};
+document.getElementById("pause").onclick=()=>{running=!running;document.getElementById("pause").textContent=running?"Пауза роста":"Продолжить рост"};
+document.getElementById("reset").onclick=()=>{if(confirm("Сбросить показатели к исходным значениям?"))location.reload()};
+document.getElementById("save").onclick=()=>{
+ const [ci,pi]=document.getElementById("person").value.split(":").map(Number);if(!Number.isFinite(pi))return;
+ const p=data[categories[ci]][pi];p.votes=Math.max(0,+document.getElementById("votes").value||0);p.rate=Math.max(0,+document.getElementById("rate").value||0);
+ const name=document.getElementById("rename").value.trim();if(name)p.name=name;render();
+};
+document.getElementById("add").onclick=()=>{
+ const name=prompt("Имя или ник участника:");if(!name)return;
+ const p={name,votes:Math.max(0,+document.getElementById("votes").value||0),rate:Math.max(0,+document.getElementById("rate").value||0)};
+ data[current].push(p);render();
+};
+setInterval(()=>{if(running){categories.forEach(c=>data[c].forEach(p=>p.votes+=p.rate/60));render()}},1000);
+render();
+</script></body></html>
